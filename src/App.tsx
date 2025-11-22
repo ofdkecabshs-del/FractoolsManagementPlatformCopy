@@ -109,9 +109,31 @@ class DataService {
   private mockTools: Tool[] = [];
   private mockGroups: Group[] = [];
 
-  constructor() {
+constructor() {
     const supabaseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) || '';
     const supabaseKey = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY) || '';
+
+    // --- 新增这段调试代码 ---
+    console.log('🔍 环境变量检查:', {
+      hasUrl: !!supabaseUrl,
+      urlValue: supabaseUrl, // 看看这里打印出来是什么
+      hasKey: !!supabaseKey
+    });
+    // -----------------------
+
+    if (supabaseUrl && supabaseKey && supabaseUrl !== 'YOUR_SUPABASE_URL') {
+      this.mode = 'supabase';
+      this.supabase = createClient(supabaseUrl, supabaseKey);
+      console.log('✅ 数据服务：Supabase 实时模式');
+    } else {
+      this.mode = 'mock';
+      const savedTools = localStorage.getItem('fracturing_tools');
+      const savedGroups = localStorage.getItem('fracturing_groups');
+      this.mockTools = savedTools ? JSON.parse(savedTools) : [...MOCK_TOOLS];
+      this.mockGroups = savedGroups ? JSON.parse(savedGroups) : [...MOCK_GROUPS];
+      console.log('⚠️ 数据服务：演示模式（本地存储）');
+    }
+  }
 
     if (supabaseUrl && supabaseKey && supabaseUrl !== 'YOUR_SUPABASE_URL') {
       this.mode = 'supabase';
